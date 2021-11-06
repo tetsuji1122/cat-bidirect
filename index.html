@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  <meta charset="utf-8">
+  <title>しっぽスライダー</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  <style>
+    #app {
+      background:#FFC300
+    }
+    h4 {
+      color:#003049;
+    }
+    .btcolor {
+      color:#003049;
+    }
+  </style>
+</head>
+<body>
+<!-- HTML -->
+<div id="app" >
+  <v-app>
+    <v-main>
+      <v-container>
+        <v-row>
+          <v-col cols="12">
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <v-card
+                  elevation="2"
+                  v-bind="attrs"
+                  v-on="on"
+                  v-on:click="greet"
+                  color="#FFC300"
+                        >
+                    <!-- 撮影画像 -->
+                    <p><video id="myVideo" width="100%" height="300" autoplay playsinline="true"></video></p>
+                    <p><canvas id="myCanvas" style="display:none"></canvas></p>
+                </v-card>
+
+              </template>
+              <span>{{message}}</span>
+            </v-tooltip>
+        
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="2">
+            <v-text-field 
+            v-model="obnizid"
+            label="共有キー" color="#003049"
+          ></v-text-field>
+          </v-col>
+        </v-row>
+        <v-row>
+        </v-col>
+          <v-col cols="12">
+          <v-slider
+          v-model="angle"
+          :thumb-size="36"
+          thumb-label="always"
+          color="#003049"
+          @input="tail"
+          min="0" max="180"
+          >
+          　<template v-slot:thumb-label="{value}">{{"🐈"}}</template>
+          </v-slider>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="2">
+            <v-btn @click="display('cards-heart')" x-large color="#003049" block>
+              <v-icon color="white" x-large>mdi-cards-heart</v-icon>
+            </v-btn>
+          </v-col>
+          <v-col cols="2">
+            <v-btn @click="clear" x-large color="#003049" outlined >
+              clear
+            </v-btn>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12">
+            <h4>使い方</h4>
+            <h4>共有キーを入力して、スライダーを動かすと「しっぽ」が動かせます。ボタンで絵文字が送れます。</h4>
+          </v-col>
+        </v-row>
+        <div id="obniz-debug"></div>
+    </v-container>
+    </v-main>
+  </v-app>
+</div>  
+<!-- Vue.js を読み込む -->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<script src="https://obniz.com/js/jquery-3.2.1.min.js"></script>
+<script src="https://unpkg.com/obniz/obniz.js"></script>
+
+<!-- main関数 -->
+<script>
+  let app = new Vue({
+   el: '#app',
+   vuetify: new Vuetify(),
+   data: () => {
+      return {
+        obniz: null,
+        obnizid: '',
+        angle: 90,
+        servo: null,
+        matrix: null,
+        message:'おなかすいたにゃ'
+      };
+   },
+   methods: {
+     init:function(){
+      this.obniz = new Obniz(this.obnizid);
+      this.obniz.on('connect', () => {
+        this.servo = this.obniz.wired("ServoMotor", {gnd:0, vcc:1, signal:2});
+        this.matrix = this.obniz.wired("Keyestudio_HT16K33", { gnd:8, vcc:9, sda:10, scl:11 });
+        this.matrix.clear();
+        console.log("connected");
+      });
+      this.obniz.on('close', () => {
+        console.log("closed");
+      });
+     },
+     greet:function(){
+       console.log("greet");
+       let dict = ["おなかすいたにゃ","かまってほしいにゃ","コレなに？","💛"];
+       this.message = dict[Math.floor(Math.random() * dict.length)];
+     },
+     tail: function() {
+       if (this.obnizid == "") return;
+       console.log(this.angle);
+       this.servo.angle(this.angle);
+     },
+     display: function(key) {
+       if (this.obnizid == "") return;
+        console.log(key);
+        this.matrix.clear();
+        let dots = [];
+        if (key=="cards-heart") dots = [0,16,56,124,254,238,68,0];//ハート
+        this.matrix.brightness(7);
+        this.matrix.dots(dots);
+        setTimeout(() => {
+          this.clear();}
+        ,3000
+        );//表示を消す
+     },
+     clear:function() {
+      this.matrix.clear();
+     },
+      changeCamera:function() {
+          this.cameraMode = (this.cameraMode === 'user') ? 'environment' : 'user';
+          this.initCamera();
+      },
+      initCamera:function() {
+          //ストリーム作成とカメラ画像のストリーミング開始
+          const constraints = {facingMode:this.cameraMode};
+          const promise = navigator.mediaDevices.getUserMedia({video: constraints,audio: false});
+          promise.then(function(stream){
+              video.srcObject = stream;
+              //video.play();
+          }).catch(function(err){
+              this.result = err;
+              console.log(err);
+          });
+      },
+   },
+   created : function(){//初期化処理
+   }
+  });
+  //カメラの初期化
+  navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  window.URL = window.URL || window.webkitURL; 
+  //カメラ入力
+  var video = document.getElementById('myVideo');
+  //中間出力
+  var canvas = document.getElementById('myCanvas');
+  var ctx = canvas.getContext('2d');
+  app.initCamera();
+
+</script>
+</body>
+</html>
