@@ -12,10 +12,11 @@
       background:#FFC300
     }
     h4 {
-      color:#003049;
+      color:#886b39;
+;
     }
     .btcolor {
-      color:#003049;
+      color:#886b39;
     }
   </style>
 </head>
@@ -44,19 +45,32 @@
               </template>
               <span>{{message}}</span>
             </v-tooltip>
-            <v-btn @click="changeCamera" color="#003049" outlined>
+            <v-btn @click="changeCamera" color="#B38F52" outlined>
               <v-icon>mdi-camera-flip</v-icon>
             </v-btn>
 
           </v-col>
         </v-row>
         <v-row>
+          <v-col cols="2" center>
+            <v-img src="img/tail01.png" @click="greet" width="80" height="80">
+            </v-img>
+            <h4>共感する</h4>
+          </v-col>
           <v-col cols="2">
-            <v-text-field 
-            v-model="obnizid"
-            label="共有キー" color="#003049"
-            v-on:change="init"
-          ></v-text-field>
+            <v-img src="img/tail02.png" @click="greet" width="80" height="80">
+            </v-img>
+            <h4>喜び</h4>
+          </v-col>
+          <v-col cols="2">
+            <v-img src="img/tail03.png" @click="greet" width="80" height="80">
+            </v-img>
+            <h4>不安</h4>
+          </v-col>
+          <v-col cols="2">
+            <v-img src="img/tail04.png" @click="greet" width="80" height="80">
+            </v-img>
+            <h4>驚き</h4>
           </v-col>
         </v-row>
         <v-row>
@@ -66,7 +80,7 @@
           v-model="angle"
           :thumb-size="36"
           thumb-label="always"
-          color="#003049"
+          color="#B38F52"
           @input="tail"
           min="0" max="180"
           >
@@ -76,14 +90,23 @@
         </v-row>
         <v-row>
           <v-col cols="2">
-            <v-btn @click="display('cards-heart')" x-large color="#003049" block>
+            <v-btn @click="display('cards-heart')" x-large color="#B38F52" block>
               <v-icon color="white" x-large>mdi-cards-heart</v-icon>
             </v-btn>
           </v-col>
           <v-col cols="2">
-            <v-btn @click="clear" x-large color="#003049" outlined >
+            <v-btn @click="clear" x-large color="#B38F52" outlined >
               clear
             </v-btn>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="2">
+            <v-text-field 
+            v-model="obnizid"
+            label="共有キー" color="#B38F52"
+            v-on:change="init"
+          ></v-text-field>
           </v-col>
         </v-row>
         <v-row>
@@ -135,6 +158,10 @@
        console.log("greet");
        let dict = ["おなかすいたにゃ","かまってほしいにゃ","コレなに？","💛"];
        this.message = dict[Math.floor(Math.random() * dict.length)];
+     },
+     joy: function() {
+       if (this.obnizid == "") return;
+       console.log("joy");
      },
      tail: function() {
        if (this.obnizid == "") return;
